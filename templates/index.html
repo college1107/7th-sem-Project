@@ -10,6 +10,7 @@
 </head>
 <body>
     <!-- Chats container -->
+    <textarea id="link-input" spellcheck="false" placeholder="Enter a link" required></textarea>
     <div class="chat-container"></div>
 
     <!-- Typing container -->
@@ -18,7 +19,6 @@
         <div class="typing-content">
             <div class="typing-textarea">
                 <textarea id="chat-input" spellcheck="false" placeholder="Enter a prompt here" required></textarea>
-                <textarea id="link-input" spellcheck="false" placeholder="Enter a link" required></textarea>
                 <span id="send-btn" class="material-symbols-rounded">send</span>
             </div>
             <div class="typing-controls">
@@ -28,6 +28,15 @@
         </div>
 
         <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+        </script>
+        <script>
+        document.getElementById('link-input').addEventListener('change', function() {
+            if (this.value) {
+                this.style.display = 'none';
+                document.getElementById('chat-content').style.display = 'block';
+            }
+        });
+    </script>
     </div>
 </body>
 </html>

@@ -29,7 +29,11 @@
 body {
   background: var(--outgoing-chat-bg);
 }
-
+.link-input{
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
 /* Chats container styling */
 .chat-container {
   overflow-y: auto;
