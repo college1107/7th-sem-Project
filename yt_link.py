@@ -1,12 +1,17 @@
 from youtube_transcript_api import YouTubeTranscriptApi
+import re
 
-video_id = '2e5pQqBvGco&t'
+def transcript(link):
+    pattern = r'v=([A-Za-z0-9]*)'
+    matches = re.findall(pattern, link)
+    strings=list()
+    if matches:
+        try:
+            transcript = YouTubeTranscriptApi.get_transcript(matches)
 
-try:
-    transcript = YouTubeTranscriptApi.get_transcript(video_id)
+            for entry in transcript:
+                strings.append(entry['text'])
 
-    for entry in transcript:
-        print(entry['text'])
-
-except Exception as e:
-    print(f"An error occurred: {e}")
+            return ' '.join(strings)
+        except Exception as e:
+            print(f"An error occurred: {e}")
