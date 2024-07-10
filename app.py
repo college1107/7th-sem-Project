@@ -1,26 +1,31 @@
-from flask import Flask, request, jsonify, render_template
-# import your_nlp_model  # Replace this with your actual NLP model import
-from yt_link import transcript
-from bot import QNA
+from flask import Flask, render_template, request, jsonify
+import bot as b
 app = Flask(__name__)
+
+# Simulated function to check if a YouTube link is valid
+def is_valid_youtube_link(link):
+    return "youtube.com" in link or "youtu.be" in link
 
 @app.route('/')
 def index():
     return render_template('index.html')
+yt_link=str()
+@app.route('/validate_link', methods=['POST'])
+def validate_link():
+    global yt_link
+    data = request.get_json()
+    yt_link = data.get('yt_link', '')
+    is_valid = is_valid_youtube_link(yt_link)
+    return jsonify({'is_valid': is_valid})
 
-@app.route('/chat', methods=['POST'])
-def chat():
-    data = request.json
-    print(data)
-    user_text = data['prompt']
-    data = transcript(user_text)
-    # bot(bot)
-    # Get response from your NLP model
-    # nlp_response = your_nlp_model.get_response(user_text)  # Replace this with your actual model call
-
-    return jsonify({
-        'response': 'hello'
-    })
+@app.route('/get_answer', methods=['POST'])
+def get_answer():
+    data = request.get_json()
+    question = data.get('question', '')
+    link_data = b.transcript(yt_link)
+    res = b.QNA(question,link_data)
+    answer = res
+    return jsonify({'answer': answer})
 
 if __name__ == '__main__':
     app.run(debug=True)

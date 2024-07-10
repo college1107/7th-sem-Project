@@ -1,42 +1,54 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>QNA Chatbot</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Google Fonts Link For Icons -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <title>YouTube Q/A App</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
 </head>
 <body>
-    <!-- Chats container -->
-    <textarea id="link-input" spellcheck="false" placeholder="Enter a link" required></textarea>
-    <div class="chat-container"></div>
-
-    <!-- Typing container -->
-    
-    <div class="typing-container">
-        <div class="typing-content">
-            <div class="typing-textarea">
-                <textarea id="chat-input" spellcheck="false" placeholder="Enter a prompt here" required></textarea>
-                <span id="send-btn" class="material-symbols-rounded">send</span>
-            </div>
-            <div class="typing-controls">
-                <span id="theme-btn" class="material-symbols-rounded">light_mode</span>
-                <span id="delete-btn" class="material-symbols-rounded">delete</span>
-            </div>
+    <div class="container">
+        <div class="form-group">
+            <!-- <label for="yt-link">Enter YouTube Link</label> -->
+            <input type="text" class="form-control" id="yt-link" placeholder="Enter YouTube link" oninput="validateLink()">
         </div>
-
-        <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-        </script>
-        <script>
-        document.getElementById('link-input').addEventListener('change', function() {
-            if (this.value) {
-                this.style.display = 'none';
-                document.getElementById('chat-content').style.display = 'block';
-            }
-        });
-    </script>
+        <form onsubmit="submitQuestion(event)">
+            <div class="form-group input-group">
+                <textarea class="form-control" id="question" placeholder="Ask a question" disabled></textarea>
+                <textarea class="form-control" id="answer" placeholder="Answer will appear here" readonly></textarea>
+            </div>
+            <div style="display: flex; justify-content: center;">
+            <button type="submit" class="btn btn-primary" style="margin: 10px;">Submit</button>
+            <button type="submit" class="btn btn-danger" style="margin: 10px;" onclick="Relode()">Reset</button>
+        </div>
+        </form>
     </div>
+    <script>
+        async function validateLink() {
+            const ytLink = document.getElementById('yt-link').value;
+            const response = await fetch('/validate_link', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ yt_link: ytLink })
+            });
+            const data = await response.json();
+            document.getElementById('question').disabled = !data.is_valid;
+        }
+        function Relode(){
+            
+        }
+        async function submitQuestion(event) {
+            event.preventDefault();
+            const question = document.getElementById('question').value;
+            const response = await fetch('/get_answer', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ question: question })
+            });
+            const data = await response.json();
+            document.getElementById('answer').value = data.answer;
+        }
+    </script>
 </body>
 </html>
