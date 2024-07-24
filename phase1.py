@@ -61,6 +61,9 @@ def fetch_transcript(video_id):
         return transcript_text
     except (TranscriptsDisabled, NoTranscriptFound, VideoUnavailable) as e:
         return str(e)
+    
+def convert_to_markdown(answer):
+    return f"# Extended Answer\n\n{answer}"
 
 def main():
     st.title("YouTube Transcript Q/A Chatbot")
@@ -102,6 +105,15 @@ def main():
                 st.experimental_rerun()
             else:
                 st.warning("No link is entered")
+    with col2:
+        if 'output_placeholder' in st.session_state and st.session_state.output_placeholder:
+            markdown_content = convert_to_markdown(st.session_state.output_placeholder)
+            st.download_button(
+                label="Export as Markdown",
+                data=markdown_content,
+                file_name="extended_answer.md",
+                mime="text/markdown"
+            )
 
 if __name__ == "__main__":
     main()
