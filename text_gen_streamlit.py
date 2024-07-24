@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 
 
-api_key = "api"  #add your actual API key
+api_key = "AIzaSyAyRBWQ016M7-GJ65NQ9szFk-TkPHCje_U"  #add your actual API key
 genai.configure(api_key=api_key)
 
 def generate_extended_answer(prompt, max_tokens, temperature):

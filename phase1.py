@@ -6,13 +6,10 @@ from transformers import pipeline
 import warnings
 import spacy
 import requests
-import openai
+import google.generativeai as genai
 
 warnings.filterwarnings("ignore", category=UserWarning, module="transformers")
-
-# OpenAI API
-openai.api_key = "sk-proj-XmmWBu7Xle2RiNjmkSYfT3BlbkFJmOtJLv4FfSsD4QXb3RPy"
-
+genai.configure(api_key='AIzaSyAyRBWQ016M7-GJ65NQ9szFk-TkPHCje_U')
 def Title(link):
     try:
         res = requests.get(link)
@@ -41,20 +38,21 @@ def QNA(question, context):
     except Exception as e:
         return f"Error in QNA: {e}"
 
-def generate_extended_answer(prompt):
+def generate_extended_answer(prompt, max_tokens, temperature):
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=150,
-            temperature=0.7,
-        )
-        return response.choices[0].message["content"].strip()
+        model = genai.GenerativeModel(model_name="gemini-1.5-flash")
+        response = model.generate_content([prompt])
+        answer = response.text
+        if max_tokens:
+            answer = ' '.join(answer.split()[:max_tokens])
+        return answer
     except Exception as e:
-        return f"Error in generating extended answer: {e}"
+        return f"Error generating answer: {e}"
+
+with st.sidebar:
+    st.subheader("Settings")
+    max_tokens = st.number_input("Maximum Tokens", min_value=1, max_value=5000, value=3000)
+    temperature = st.slider("Temperature", min_value=0.0, max_value=1.0, value=0.7)
 
 def fetch_transcript(video_id):
     try:
@@ -98,7 +96,8 @@ def main():
             if link and transcript:
                 context = PreProcess(transcript, link)
                 qa_answer = QNA(question, context)
-                extended_answer = generate_extended_answer(f"Extend the following answer: {qa_answer}")
+                extended_prompt = f"Based on the following question and context, extend the given answer: {qa_answer}\n\nQuestion: {question}\nContext: {context}"
+                extended_answer = generate_extended_answer(extended_prompt, max_tokens, temperature)
                 st.session_state.output_placeholder = extended_answer
                 st.experimental_rerun()
             else:
