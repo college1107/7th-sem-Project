@@ -10,7 +10,7 @@ import openai
 
 warnings.filterwarnings("ignore", category=UserWarning, module="transformers")
 
-# OpenAI API 
+# OpenAI API
 openai.api_key = "sk-proj-XmmWBu7Xle2RiNjmkSYfT3BlbkFJmOtJLv4FfSsD4QXb3RPy"
 
 def Title(link):
@@ -43,15 +43,16 @@ def QNA(question, context):
 
 def generate_extended_answer(prompt):
     try:
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=prompt,
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt}
+            ],
             max_tokens=150,
-            n=1,
-            stop=None,
             temperature=0.7,
         )
-        return response.choices[0].text.strip()
+        return response.choices[0].message["content"].strip()
     except Exception as e:
         return f"Error in generating extended answer: {e}"
 
