@@ -51,7 +51,7 @@ def generate_extended_answer(prompt, max_tokens, temperature):
 
 with st.sidebar:
     st.subheader("Settings")
-    max_tokens = st.number_input("Maximum Tokens", min_value=1, max_value=5000, value=3000)
+    max_tokens = st.number_input("Maximum Tokens", min_value=1, max_value=5000, value=500)
     temperature = st.slider("Temperature", min_value=0.0, max_value=1.0, value=0.7)
 
 def fetch_transcript(video_id):
