@@ -131,7 +131,7 @@ def main():
             if link and transcript:
                 context = PreProcess(transcript, link)
                 qa_answer = QNA(question, context)
-                extended_prompt = f"Based on the following question and context, extend the given answer: {qa_answer}\n\nQuestion: {question}\nContext: {context}"
+                extended_prompt = f'''Give answers only based on the following question and context, extend the given answer: {qa_answer}\n\nQuestion: {question}\nContext: {context} and if the question is not realted to our Context then tell the me that, "please enter valid question related to your video"  '''
                 extended_answer = generate_extended_answer(
                     extended_prompt, max_tokens, temperature
                 )
