@@ -12,9 +12,14 @@ import warnings
 import spacy
 import requests
 import google.generativeai as genai
-
+import pyttsx3
+import io
+import speech_recognition as sr
+engine = pyttsx3.init()
 warnings.filterwarnings("ignore", category=UserWarning, module="transformers")
 genai.configure(api_key="AIzaSyAyRBWQ016M7-GJ65NQ9szFk-TkPHCje_U")
+
+
 
 
 def Title(link):
@@ -89,8 +94,39 @@ def markdown_to_text(markdown):
     text = re.sub(r"^\s*\d+\.\s+", "", text, flags=re.MULTILINE)
     text = re.sub(r"\n+", "\n", text).strip()
     return text
+from gtts import gTTS
 
+# def speak_text(text):
+#     engine.say(text)
+#     engine.runAndWait()
+def speak_text(text):
+    # Convert text to speech
+    tts = gTTS(text)
+    
+    # Save to a BytesIO object
+    audio_buffer = io.BytesIO()
+    tts.write_to_fp(audio_buffer)
+    audio_buffer.seek(0)  # Reset buffer position to the beginning
 
+    # Play the audio in Streamlit
+    st.audio(audio_buffer)
+    
+def record_and_recognize():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        st.write("Please say something...")
+        recognizer.adjust_for_ambient_noise(source, duration=1)
+        audio = recognizer.listen(source)
+    try:
+        text = recognizer.recognize_google(audio)
+        return text
+    except sr.UnknownValueError:
+        st.error("Sorry, I could not understand the audio.")
+        return ""
+    except sr.RequestError:
+        st.error("Could not request results from Google Speech Recognition service.")
+        return ""
+    
 def main():
     st.title("YouTube Transcript Q/A Chatbot")
     if "output_placeholder" not in st.session_state:
@@ -131,27 +167,22 @@ def main():
             if link and transcript:
                 context = PreProcess(transcript, link)
                 qa_answer = QNA(question, context)
-                extended_prompt = f'''Give answers only based on the following question and context, extend the given answer: {qa_answer}\n\nQuestion: {question}\nContext: {context} and if the question is not realted to our Context then tell the me that, "please enter valid question related to your video"  '''
+                extended_prompt = f"""Give answers only based on the following question and context, extend the given answer: {qa_answer}\n\nQuestion: {question}\nContext: {context} and if the question is not realted to our Context then tell the me that, "please enter valid question related to your video"  """
                 extended_answer = generate_extended_answer(
                     extended_prompt, max_tokens, temperature
                 )
                 st.session_state.output_placeholder = markdown_to_text(extended_answer)
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.warning("No link is entered")
 
     with col2:
-        if (
-            "output_placeholder" in st.session_state
-            and st.session_state.output_placeholder
-        ):
-            # markdown_content = convert_to_markdown(st.session_state.output_placeholder)
-            st.download_button(
-                label="Export",
-                data=markdown_to_text(st.session_state.output_placeholder),
-                file_name=f"{question}_file.txt",
-                mime="text",
-            )
+        with col2:
+            if (
+                "output_placeholder" in st.session_state
+                and st.session_state.output_placeholder
+            ):
+                speak_text(st.session_state.output_placeholder)
 
 
 if __name__ == "__main__":
