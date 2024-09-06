@@ -79,7 +79,19 @@ def fetch_transcript(video_id):
 
 # Convert markdown to text
 def markdown_to_text(markdown):
-    text = re.sub(r'\\(\*|\_|\[|\]|\(|\)|\`)', r'\1', markdown)
+     # Remove HTML underline tags if any
+    text = re.sub(r'<u>(.*?)</u>', r'\1', markdown)
+    
+    # Convert bold to plain text
+    text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)  # Bold using **
+    text = re.sub(r'__(.*?)__', r'\1', text)     # Bold using __
+
+    # Convert italic to plain text
+    text = re.sub(r'\*(.*?)\*', r'\1', text)     # Italic using *
+    text = re.sub(r'_(.*?)_', r'\1', text)       # Italic using _
+
+    # Convert other markdown styles
+    text = re.sub(r'\\(\*|\_|\[|\]|\(|\)|\`)', r'\1', text)  # Escape characters
     text = re.sub(r'!\[.*?\]\(.*?\)', '', text)  # Images
     text = re.sub(r'\[.*?\]\(.*?\)', '', text)  # Links
     text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)  # Headers
@@ -89,6 +101,7 @@ def markdown_to_text(markdown):
     text = re.sub(r'`([^`]*)`', r'\1', text)  # Inline code
     text = re.sub(r'^\s*[-\*]{3,}\s*$', '', text, flags=re.MULTILINE)  # Horizontal rules
     text = re.sub(r'\n+', '\n', text).strip()
+    
     return text
 
 # Function to speak text using Google TTS
@@ -174,7 +187,7 @@ def main():
 
     with col1:
         # Use the voice input to set the default value of the text area
-        question = st.text_area("Question:", value=st.session_state.voice_input, height=300, key="question_input")
+        question = st.text_area("Question:", value=st.session_state.voice_input or "", height=300, key="question_input")
         
         if st.button("Start Recording"):
             st.session_state.voice_input = record_and_recognize()
@@ -186,10 +199,6 @@ def main():
             value=st.session_state.output_placeholder,
             height=300,
         )
-
-    # Clear voice input after it's been used
-    if st.session_state.voice_input:
-        st.session_state.voice_input = ""
 
     with col1:
         if st.button("Process"):
