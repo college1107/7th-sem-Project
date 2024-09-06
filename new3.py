@@ -18,6 +18,7 @@ from gtts import gTTS
 import speech_recognition as sr
 from textblob import TextBlob
 import pyttsx3
+import pytube
 warnings.filterwarnings("ignore", category=UserWarning, module="transformers")
 genai.configure(api_key="AIzaSyAyRBWQ016M7-GJ65NQ9szFk-TkPHCje_U")
 
@@ -32,6 +33,11 @@ def Title(link):
         return video_title
     except Exception as e:
         return f"Error fetching title: {e}"
+
+def fetch_image(link):
+    yt = pytube.YouTube(link)
+    
+    return yt.thumbnail_url
 
 # Preprocess transcript text using spacy
 def PreProcess(text, link):
@@ -168,6 +174,7 @@ def main():
         st.session_state.recording = False
 
     link = st.text_input("Enter YouTube Link")
+    st.image(fetch_image(link))
 
     transcript = ""
     if link:
@@ -182,7 +189,6 @@ def main():
             st.error("Invalid YouTube link. Please enter a valid YouTube link.")
         except Exception as e:
             st.error(f"An error occurred: {e}")
-
     col1, col2 = st.columns(2)
 
     with col1:
