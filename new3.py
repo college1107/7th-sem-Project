@@ -20,7 +20,7 @@ from textblob import TextBlob
 import pyttsx3
 import pytube
 warnings.filterwarnings("ignore", category=UserWarning, module="transformers")
-genai.configure(api_key="AIzaSyBH0mesznbG44TruQFyUdT04AhO-Ru01MY")
+genai.configure(api_key="AIzaSyBMBGyGIBlCzWBCgJdJtjKIF1fM3mAitA4")
 
 engine = pyttsx3.init()
 # Function to get video title
