@@ -179,8 +179,10 @@ def main():
     transcript = ""
     if link:
         try:
-            video_id = re.findall(r"v=([A-Za-z0-9_-]+)", link)[0]
-            transcript = fetch_transcript(video_id)
+            video_id_match = re.findall(r"(?:v=|\/)([0-9A-Za-z_-]{11})", link)
+            if video_id_match:
+                video_id = video_id_match[0]
+                transcript = fetch_transcript(video_id)
             if transcript:
                 st.success("Transcript fetched successfully!")
             else:
