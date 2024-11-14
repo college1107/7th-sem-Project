@@ -1,3 +1,6 @@
+# https://www.youtube.com/watch?v=PzkPyld6Duc
+
+
 import streamlit as st
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import (
@@ -23,7 +26,6 @@ warnings.filterwarnings("ignore", category=UserWarning, module="transformers")
 genai.configure(api_key="AIzaSyBMBGyGIBlCzWBCgJdJtjKIF1fM3mAitA4")
 
 engine = pyttsx3.init()
-# Function to get video title
 def Title(link):
     try:
         res = requests.get(link)
@@ -39,7 +41,6 @@ def fetch_image(link):
     
     return yt.thumbnail_url
 
-# Preprocess transcript text using spacy
 def PreProcess(text, link):
     nlp_spacy = spacy.load("en_core_web_lg")
     title = f"Title or main topic of the video is {Title(link)}"
@@ -48,7 +49,6 @@ def PreProcess(text, link):
     tokens.append(title)
     return " ".join(tokens)
 
-# QnA model using a transformer pipeline
 def QNA(question, context):
     model_name = "deepset/roberta-base-squad2"
     nlp = pipeline("question-answering", model=model_name, tokenizer=model_name)
@@ -59,7 +59,6 @@ def QNA(question, context):
     except Exception as e:
         return f"Error in QnA: {e}"
 
-# Function to extend answer using Google Generative AI
 def generate_extended_answer(prompt, max_output_tokens=1000):
     try:
         model = genai.GenerativeModel(model_name="gemini-1.5-flash")
@@ -74,7 +73,6 @@ def generate_extended_answer(prompt, max_output_tokens=1000):
     except Exception as e:
         return f"Error generating answer: {e}"
 
-# Function to fetch transcript of a YouTube video
 def fetch_transcript(video_id):
     try:
         transcript = YouTubeTranscriptApi.get_transcript(video_id)
@@ -83,34 +81,24 @@ def fetch_transcript(video_id):
     except (TranscriptsDisabled, NoTranscriptFound, VideoUnavailable) as e:
         return str(e)
 
-# Convert markdown to text
 def markdown_to_text(markdown):
-     # Remove HTML underline tags if any
     text = re.sub(r'<u>(.*?)</u>', r'\1', markdown)
-    
-    # Convert bold to plain text
-    text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)  # Bold using **
-    text = re.sub(r'__(.*?)__', r'\1', text)     # Bold using __
-
-    # Convert italic to plain text
-    text = re.sub(r'\*(.*?)\*', r'\1', text)     # Italic using *
-    text = re.sub(r'_(.*?)_', r'\1', text)       # Italic using _
-
-    # Convert other markdown styles
-    text = re.sub(r'\\(\*|\_|\[|\]|\(|\)|\`)', r'\1', text)  # Escape characters
-    text = re.sub(r'!\[.*?\]\(.*?\)', '', text)  # Images
-    text = re.sub(r'\[.*?\]\(.*?\)', '', text)  # Links
-    text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)  # Headers
-    text = re.sub(r'^\s*[-*+]\s+', '', text, flags=re.MULTILINE)  # Unordered lists
-    text = re.sub(r'^\s*\d+\.\s+', '', text, flags=re.MULTILINE)  # Ordered lists
-    text = re.sub(r'```[\s\S]*?```', '', text)  # Code blocks
-    text = re.sub(r'`([^`]*)`', r'\1', text)  # Inline code
-    text = re.sub(r'^\s*[-\*]{3,}\s*$', '', text, flags=re.MULTILINE)  # Horizontal rules
+    text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)
+    text = re.sub(r'__(.*?)__', r'\1', text)
+    text = re.sub(r'\*(.*?)\*', r'\1', text)
+    text = re.sub(r'_(.*?)_', r'\1', text)
+    text = re.sub(r'\\(\*|\_|\[|\]|\(|\)|\`)', r'\1', text)
+    text = re.sub(r'!\[.*?\]\(.*?\)', '', text)
+    text = re.sub(r'\[.*?\]\(.*?\)', '', text)
+    text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
+    text = re.sub(r'^\s*[-*+]\s+', '', text, flags=re.MULTILINE)
+    text = re.sub(r'^\s*\d+\.\s+', '', text, flags=re.MULTILINE)
+    text = re.sub(r'```[\s\S]*?```', '', text)
+    text = re.sub(r'`([^`]*)`', r'\1', text)
+    text = re.sub(r'^\s*[-\*]{3,}\s*$', '', text, flags=re.MULTILINE)
     text = re.sub(r'\n+', '\n', text).strip()
-    
     return text
 
-# Function to speak text using Google TTS
 def speak_text(text):
     try:
         tts = gTTS(text, lang='en', slow=False, tld='com')
@@ -121,7 +109,6 @@ def speak_text(text):
     except Exception as e:
         st.error(f"Error in voice output: {e}")
 
-# Function to record and recognize voice input
 def record_and_recognize():
     recognizer = sr.Recognizer()
     audio_data = []
@@ -154,7 +141,6 @@ def record_and_recognize():
         st.error("Could not request results from Google Speech Recognition service.")
         return ""
 
-# Function to correct text using TextBlob
 def correct_text(text):
     blob = TextBlob(text)
     corrected_text = str(blob.correct())
@@ -174,10 +160,10 @@ def main():
         st.session_state.recording = False
 
     link = st.text_input("Enter YouTube Link")
-    st.image(fetch_image(link))
 
     transcript = ""
     if link:
+        st.image(fetch_image(link))
         try:
             video_id_match = re.findall(r"(?:v=|\/)([0-9A-Za-z_-]{11})", link)
             if video_id_match:
@@ -194,10 +180,9 @@ def main():
     col1, col2 = st.columns(2)
 
     with col1:
-        # Use the voice input to set the default value of the text area
         question = st.text_area("Question:", value=st.session_state.voice_input or "", height=300, key="question_input")
         
-        if st.button("Start Recording"):
+        if st.button("🗣️ Speak"):
             st.session_state.voice_input = record_and_recognize()
             st.rerun()
 
@@ -214,7 +199,6 @@ def main():
                 context = PreProcess(transcript, link)
                 corrected_question = correct_text(question)
                 
-                # Check for valid context-question matching
                 qa_answer = QNA(corrected_question, context)
                 if not qa_answer or qa_answer.lower() == "sorry, no valid answer found.":
                     st.session_state.output_placeholder = "Please ask a valid question related to your video."
@@ -230,7 +214,6 @@ def main():
         if st.session_state.output_placeholder:
             speak_text(st.session_state.output_placeholder)
 
-# Streamlit Sidebar for Settings
 with st.sidebar:
     st.subheader("Settings")
     st.slider("Temperature", min_value=0.0, max_value=1.0, value=0.5, step=0.1)
